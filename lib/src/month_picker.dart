@@ -8,6 +8,9 @@ import 'package:flutter_date_pickers/src/date_picker_keys.dart';
 import 'package:flutter_date_pickers/src/semantic_sorting.dart';
 import 'package:flutter_date_pickers/src/utils.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:flutter_date_pickers/src/i_selectable_picker.dart';
+import 'package:flutter_date_pickers/src/day_type.dart';
+import 'package:wallet_app/views/app_dimensions.dart';
 
 // Styles for current displayed period (year): Theme.of(context).textTheme.subhead
 //
@@ -22,14 +25,15 @@ class MonthPicker extends StatefulWidget {
   MonthPicker(
       {Key key,
       @required this.selectedDate,
-      @required this.onChanged,
       @required this.firstDate,
       @required this.lastDate,
+      this.onChanged,
+      this.onRangeChanged,
+      this.selectedPeriod,
       this.datePickerLayoutSettings = const DatePickerLayoutSettings(),
       this.datePickerKeys,
       this.datePickerStyles})
       : assert(selectedDate != null),
-        assert(onChanged != null),
         assert(!firstDate.isAfter(lastDate)),
         assert(selectedDate.isAfter(firstDate) ||
             selectedDate.isAtSameMomentAs(firstDate)),
@@ -45,6 +49,9 @@ class MonthPicker extends StatefulWidget {
   /// Called when the user picks a month.
   final ValueChanged<DateTime> onChanged;
 
+  // called when the user picks range.
+  final ValueChanged<DatePeriod> onRangeChanged;
+
   /// The earliest date the user is permitted to pick.
   final DateTime firstDate;
 
@@ -59,6 +66,9 @@ class MonthPicker extends StatefulWidget {
 
   /// Styles what can be customized by user
   final DatePickerStyles datePickerStyles;
+
+  // the selected months range
+  final DatePeriod selectedPeriod;
 
   @override
   State<StatefulWidget> createState() => _MonthPickerState();
@@ -88,7 +98,8 @@ class _MonthPickerState extends State<MonthPicker> {
   void initState() {
     super.initState();
     // Initially display the pre-selected date.
-    final int yearPage = DatePickerUtils.yearDelta(widget.firstDate, widget.selectedDate);
+    final int yearPage =
+        DatePickerUtils.yearDelta(widget.firstDate, widget.selectedDate);
     _monthPickerController = PageController(initialPage: yearPage);
     _handleYearPageChanged(yearPage);
     _updateCurrentDate();
@@ -98,7 +109,8 @@ class _MonthPickerState extends State<MonthPicker> {
   void didUpdateWidget(MonthPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedDate != oldWidget.selectedDate) {
-      final int yearPage = DatePickerUtils.yearDelta(widget.firstDate, widget.selectedDate);
+      final int yearPage =
+          DatePickerUtils.yearDelta(widget.firstDate, widget.selectedDate);
       _monthPickerController = PageController(initialPage: yearPage);
       _handleYearPageChanged(yearPage);
     }
@@ -137,6 +149,25 @@ class _MonthPickerState extends State<MonthPicker> {
     final ThemeData theme = Theme.of(context);
     DatePickerStyles styles = widget.datePickerStyles ?? DatePickerStyles();
     styles = styles.fulfillWithTheme(theme);
+
+    if (widget.selectedPeriod != null) {
+      return _MonthRangePicker(
+        key: ValueKey<DateTime>(year),
+        selectablePicker: RangeSelectable(
+          widget.selectedPeriod,
+          widget.firstDate,
+          widget.lastDate,
+        ),
+        currentDate: _todayDate,
+        onChanged: widget.onRangeChanged,
+        firstDate: widget.firstDate,
+        lastDate: widget.lastDate,
+        datePickerLayoutSettings: widget.datePickerLayoutSettings,
+        displayedYear: year,
+        selectedPeriodKey: widget.datePickerKeys?.selectedPeriodKeys,
+        datePickerStyles: styles,
+      );
+    }
 
     return _MonthPicker(
       key: ValueKey<DateTime>(year),
@@ -185,7 +216,7 @@ class _MonthPickerState extends State<MonthPicker> {
   Widget build(BuildContext context) {
     return SizedBox(
       width: widget.datePickerLayoutSettings.monthPickerPortraitWidth,
-      height: widget.datePickerLayoutSettings.maxDayPickerHeight,
+      height: widget.datePickerLayoutSettings.monthPickerPortraitWidth,
       child: Stack(
         children: <Widget>[
           Semantics(
@@ -194,14 +225,16 @@ class _MonthPickerState extends State<MonthPicker> {
               key: ValueKey<DateTime>(widget.selectedDate),
               controller: _monthPickerController,
               scrollDirection: Axis.horizontal,
-              itemCount: DatePickerUtils.yearDelta(widget.firstDate, widget.lastDate) + 1,
+              itemCount:
+                  DatePickerUtils.yearDelta(widget.firstDate, widget.lastDate) +
+                      1,
               itemBuilder: _buildItems,
               onPageChanged: _handleYearPageChanged,
             ),
           ),
           PositionedDirectional(
             top: 0.0,
-            start: 8.0,
+            start: 0.0,
             child: Semantics(
               sortKey: YearPickerSortKey.previousYear,
               child: IconButton(
@@ -216,7 +249,7 @@ class _MonthPickerState extends State<MonthPicker> {
           ),
           PositionedDirectional(
             top: 0.0,
-            end: 8.0,
+            end: 0.0,
             child: Semantics(
               sortKey: YearPickerSortKey.nextYear,
               child: IconButton(
@@ -301,7 +334,8 @@ class _MonthPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MaterialLocalizations localizations = MaterialLocalizations.of(context);
+    final MaterialLocalizations localizations =
+        MaterialLocalizations.of(context);
     final Locale locale = Localizations.localeOf(context);
 
     final ThemeData themeData = Theme.of(context);
@@ -336,6 +370,7 @@ class _MonthPicker extends StatelessWidget {
       }
 
       Widget monthWidget = Container(
+        margin: EdgeInsets.symmetric(vertical: AppDimensions.convertToH(10)),
         decoration: decoration,
         child: Center(
           child: Semantics(
@@ -349,7 +384,8 @@ class _MonthPicker extends StatelessWidget {
                 '${localizations.formatDecimal(month)}, ${localizations.formatFullDate(monthToBuild)}',
             selected: isSelectedMonth,
             child: ExcludeSemantics(
-              child: Text(intl.DateFormat.MMM(locale.languageCode).format(monthToBuild),
+              child: Text(
+                  intl.DateFormat.MMM(locale.languageCode).format(monthToBuild),
                   style: itemStyle),
             ),
           ),
@@ -370,30 +406,220 @@ class _MonthPicker extends StatelessWidget {
       labels.add(monthWidget);
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        children: <Widget>[
-          Container(
-            height: datePickerLayoutSettings.dayPickerRowHeight,
-            child: Center(
-              child: ExcludeSemantics(
-                child: Text(
-                  intl.DateFormat.y().format(displayedYear),
-                  key: selectedPeriodKey,
-                  style: datePickerStyles.displayedPeriodTitle,
-                ),
+    return Column(
+      children: <Widget>[
+        Container(
+          height: datePickerLayoutSettings.dayPickerRowHeight,
+          child: Center(
+            child: ExcludeSemantics(
+              child: Text(
+                intl.DateFormat.y().format(displayedYear),
+                key: selectedPeriodKey,
+                style: datePickerStyles.displayedPeriodTitle,
               ),
             ),
           ),
-          Flexible(
-            child: GridView.count(
+        ),
+        Flexible(
+            child: Column(
+          children: <Widget>[
+            GridView.count(
+              shrinkWrap: true,
               crossAxisCount: 4,
               children: labels,
             ),
-          ),
-        ],
-      ),
+            Container(height: 1, color: Color(0xffF0F0F0))
+          ],
+        )),
+      ],
     );
   }
 }
+
+class _MonthRangePicker extends StatelessWidget {
+  /// The month whose days are displayed by this picker.
+  final DateTime displayedYear;
+
+  /// The earliest date the user is permitted to pick.
+  final DateTime firstDate;
+
+  /// The latest date the user is permitted to pick.
+  final DateTime lastDate;
+
+  /// The currently selected date.
+
+  /// The current date at the time the picker is displayed.
+  final DateTime currentDate;
+
+  /// Layout settings what can be customized by user
+  final DatePickerLayoutSettings datePickerLayoutSettings;
+
+  /// Called when the user picks a day.
+  final ValueChanged<DatePeriod> onChanged;
+
+  ///  Key fo selected month (useful for integration tests)
+  final Key selectedPeriodKey;
+
+  /// Styles what can be customized by user
+  final DatePickerRangeStyles datePickerStyles;
+
+  /// Logic for date selections.
+  final ISelectablePicker selectablePicker;
+
+  _MonthRangePicker(
+      {@required this.displayedYear,
+      @required this.firstDate,
+      @required this.lastDate,
+      @required this.currentDate,
+      @required this.onChanged,
+      @required this.datePickerLayoutSettings,
+      @required this.selectedPeriodKey,
+      @required this.datePickerStyles,
+      @required this.selectablePicker,
+      Key key})
+      : assert(displayedYear != null),
+        assert(selectablePicker != null),
+        assert(currentDate != null),
+        assert(firstDate != null),
+        assert(datePickerLayoutSettings != null),
+        assert(lastDate != null),
+        assert(!firstDate.isAfter(lastDate)),
+        super(key: key);
+
+  // we only wondering to know if month of passed day before the month of the firstDate or after the month of the lastDate
+  // don't need to compare day and time
+  bool _isDisabled(DateTime month) {
+    DateTime beginningOfTheFirstDateMonth =
+        DateTime(firstDate.year, firstDate.month);
+    DateTime endOfTheLastDateMonth = DateTime(lastDate.year, lastDate.month + 1)
+        .subtract(Duration(microseconds: 1));
+
+    return month.isAfter(endOfTheLastDateMonth) ||
+        month.isBefore(beginningOfTheFirstDateMonth);
+  }
+
+  BoxDecoration _getSelectedDecoration(DayType monthType) {
+    BoxDecoration result;
+
+    if (monthType == DayType.single) {
+      result = datePickerStyles.selectedPeriodStartDecoration;
+    } else if (monthType == DayType.start) {
+      result = datePickerStyles.selectedPeriodStartDecoration;
+    } else if (monthType == DayType.end) {
+      result = datePickerStyles.selectedPeriodLastDecoration;
+    } else {
+      result = datePickerStyles.selectedPeriodMiddleDecoration;
+    }
+
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    selectablePicker.onUpdate
+        .listen((newSelectedDate) => onChanged(newSelectedDate));
+
+    final MaterialLocalizations localizations =
+        MaterialLocalizations.of(context);
+    final Locale locale = Localizations.localeOf(context);
+
+    final ThemeData themeData = Theme.of(context);
+    final int monthsInYear = 12;
+    final int year = displayedYear.year;
+    final int day = 1;
+
+    final List<Widget> labels = <Widget>[];
+
+    for (int i = 0; i < monthsInYear; i += 1) {
+      final int month = i + 1;
+      final DateTime monthToBuild = DateTime(year, month, day);
+
+      BoxDecoration decoration;
+      TextStyle itemStyle = themeData.textTheme.body1;
+
+      DayType monthType = selectablePicker.getMonthType(
+          monthToBuild); // DayType works also for month type predicates
+
+      if (monthType != DayType.disabled && monthType != DayType.notSelected) {
+        // The selected month gets a circle background highlight, and a contrasting text color by default.
+        if (monthType == DayType.middle) {
+          itemStyle = datePickerStyles?.defaultDateTextStyle;
+        } else {
+          itemStyle = datePickerStyles?.selectedDateStyle;
+        }
+        decoration = _getSelectedDecoration(monthType);
+      } else if (monthType == DayType.disabled) {
+        itemStyle = datePickerStyles.disabledDateStyle;
+      } else if (DatePickerUtils.sameDate(currentDate, monthToBuild)) {
+        // The current month gets a different text color.
+        itemStyle = datePickerStyles.currentDateStyle;
+      } else {
+        itemStyle = datePickerStyles.defaultDateTextStyle;
+      }
+
+      Widget monthWidget = Container(
+        margin: EdgeInsets.symmetric(vertical: AppDimensions.convertToH(10)),
+        decoration: decoration,
+        child: Center(
+          child: Semantics(
+            // We want the day of month to be spoken first irrespective of the
+            // locale-specific preferences or TextDirection. This is because
+            // an accessibility user is more likely to be interested in the
+            // day of month before the rest of the date, as they are looking
+            // for the day of month. To do that we prepend day of month to the
+            // formatted full date.
+            label:
+                '${localizations.formatDecimal(month)}, ${localizations.formatFullDate(monthToBuild)}',
+            selected: monthType != DayType.disabled &&
+                monthType != DayType.notSelected,
+            child: ExcludeSemantics(
+              child: Text(
+                  intl.DateFormat.MMM(locale.languageCode).format(monthToBuild),
+                  style: itemStyle),
+            ),
+          ),
+        ),
+      );
+
+      if (monthType != DayType.disabled) {
+        monthWidget = GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            selectablePicker.onDayTapped(
+                monthToBuild); // this handles the range of months selection
+          },
+          child: monthWidget,
+        );
+      }
+      labels.add(monthWidget);
+    }
+    return Column(
+      children: <Widget>[
+        Container(
+          height: datePickerLayoutSettings.dayPickerRowHeight,
+          child: Center(
+            child: ExcludeSemantics(
+              child: Text(
+                intl.DateFormat.y().format(displayedYear),
+                key: selectedPeriodKey,
+                style: datePickerStyles.displayedPeriodTitle,
+              ),
+            ),
+          ),
+        ),
+        Flexible(
+            child: Column(
+          children: <Widget>[
+            GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 4,
+              children: labels,
+            ),
+            Container(height: 1, color: Color(0xffF0F0F0))
+          ],
+        )),
+      ],
+    );
+  }
+}
+

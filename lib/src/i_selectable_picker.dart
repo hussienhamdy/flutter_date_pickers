@@ -31,6 +31,8 @@ abstract class ISelectablePicker<T> {
 
   DayType getDayType(DateTime day);
 
+  DayType getMonthType(DateTime month);
+
   /// Call when user tap on the day cell.
   void onDayTapped(DateTime selectedDate);
 
@@ -75,6 +77,11 @@ class WeekSelectable extends ISelectablePicker<DatePeriod> {
     DatePeriod selectedWeek = _getNewSelectedPeriod(selectedDate);
     _firstDayOfSelectedWeek = selectedWeek.start;
     _lastDayOfSelectedWeek = selectedWeek.end;
+  }
+
+  @override
+  DayType getMonthType(DateTime month){
+    // dummy
   }
 
   @override
@@ -177,6 +184,10 @@ class DaySelectable extends ISelectablePicker<DateTime> {
       {SelectableDayPredicate selectableDayPredicate}
   ) : super(firstDate, lastDate, selectableDayPredicate);
 
+@override
+  DayType getMonthType(DateTime month){
+    // dummy
+  }
   @override
   DayType getDayType(DateTime date) {
     DayType result;
@@ -223,14 +234,14 @@ class RangeSelectable extends ISelectablePicker<DatePeriod>{
     if (isDisabled(date)) {
       result = DayType.disabled;
     } else if (_isDaySelected(date)) {
-      if (DatePickerUtils.sameDate(date, selectedPeriod.start) &&
-          DatePickerUtils.sameDate(date, selectedPeriod.end)) {
+      if (DatePickerUtils.sameMonth(date, selectedPeriod.start) &&
+          DatePickerUtils.sameMonth(date, selectedPeriod.end)) {
         result = DayType.single;
-      } else if (DatePickerUtils.sameDate(date, selectedPeriod.start) ||
-          DatePickerUtils.sameDate(date, firstDate)) {
+      } else if (DatePickerUtils.sameMonth(date, selectedPeriod.start) ||
+          DatePickerUtils.sameMonth(date, firstDate)) {
         result = DayType.start;
-      } else if (DatePickerUtils.sameDate(date, selectedPeriod.end) ||
-          DatePickerUtils.sameDate(date, lastDate)) {
+      } else if (DatePickerUtils.sameMonth(date, selectedPeriod.end) ||
+          DatePickerUtils.sameMonth(date, lastDate)) {
         result = DayType.end;
       } else {
         result = DayType.middle;
@@ -242,6 +253,33 @@ class RangeSelectable extends ISelectablePicker<DatePeriod>{
     return result;
   }
 
+  // made by me to get month type
+  DayType getMonthType(DateTime date) {
+    DayType result;
+
+    if (isDisabled(date)) {
+      result = DayType.disabled;
+    } else if (_isDaySelected(date)) {
+      if (DatePickerUtils.sameMonth(date, selectedPeriod.start) &&
+          DatePickerUtils.sameMonth(date, selectedPeriod.end)) {
+        result = DayType.single;
+      } else if (DatePickerUtils.sameMonth(date, selectedPeriod.start) ||
+          DatePickerUtils.sameMonth(date, firstDate)) {
+        result = DayType.start;
+      } else if (DatePickerUtils.sameMonth(date, selectedPeriod.end) ||
+          DatePickerUtils.sameMonth(date, lastDate)) {
+        result = DayType.end;
+      } else {
+        result = DayType.middle;
+      }
+    } else {
+      result = DayType.notSelected;
+    }
+
+    return result;
+  }
+  
+
   bool _isDaySelected(DateTime date) {
     DateTime startOfTheStartDay = DatePickerUtils.startOfTheDay(selectedPeriod.start);
     DateTime endOfTheLastDay = DatePickerUtils.endOfTheDay(selectedPeriod.end);
@@ -252,7 +290,6 @@ class RangeSelectable extends ISelectablePicker<DatePeriod>{
   @override
   void onDayTapped(DateTime selectedDate) {
     DatePeriod newPeriod =  _getNewSelectedPeriod(selectedDate);
-
     return onUpdateController.add(newPeriod);
   }
 
@@ -269,7 +306,6 @@ class RangeSelectable extends ISelectablePicker<DatePeriod>{
       bool selectedAlreadySelectedDay = DatePickerUtils.sameDate(tappedDate, selectedPeriod.end);
       bool isSelectedFirstDay = DatePickerUtils.sameDate(tappedDate, firstDate);
       bool isSelectedLastDay = DatePickerUtils.sameDate(tappedDate, lastDate);
-
       if (selectedAlreadySelectedDay) {
         if (isSelectedFirstDay && isSelectedLastDay)
           newPeriod = DatePeriod(firstDate, lastDate);
@@ -281,7 +317,6 @@ class RangeSelectable extends ISelectablePicker<DatePeriod>{
           newPeriod = DatePeriod(DatePickerUtils.startOfTheDay(tappedDate), DatePickerUtils.endOfTheDay(tappedDate));
       } else {
         DateTime startOfTheSelectedDay = DatePickerUtils.startOfTheDay(selectedPeriod.start);
-
         if (!tappedDate.isAfter(startOfTheSelectedDay)) {
           newPeriod = DatePickerUtils.sameDate(tappedDate, firstDate)
               ? DatePeriod(firstDate, selectedPeriod.end)
@@ -312,4 +347,5 @@ class RangeSelectable extends ISelectablePicker<DatePeriod>{
     return newPeriod;
   }
 }
+
 
