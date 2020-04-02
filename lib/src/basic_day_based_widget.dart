@@ -5,6 +5,8 @@ import 'package:flutter_date_pickers/src/day_type.dart';
 import 'package:flutter_date_pickers/src/event_decoration.dart';
 import 'package:flutter_date_pickers/src/i_selectable_picker.dart';
 import 'package:flutter_date_pickers/src/utils.dart';
+import 'package:wallet_app/views/app_dimensions.dart';
+
 
 /// Widget for date pickers based on days and cover entire month.
 /// Each cell of this picker is day.
@@ -118,7 +120,11 @@ class DayBasedPicker<T> extends StatelessWidget with CommonDatePickerFunctions {
 
         if (dayType != DayType.disabled && dayType != DayType.notSelected) {
           // The selected day gets a circle background highlight, and a contrasting text color by default.
+          if (dayType == DayType.middle) {
+          itemStyle = datePickerStyles?.defaultDateTextStyle;
+        } else {
           itemStyle = datePickerStyles?.selectedDateStyle;
+        }
           decoration = _getSelectedDecoration(dayType);
         } else if (dayType == DayType.disabled) {
           itemStyle = datePickerStyles.disabledDateStyle;
@@ -139,6 +145,7 @@ class DayBasedPicker<T> extends StatelessWidget with CommonDatePickerFunctions {
         }
 
         Widget dayWidget = Container(
+          margin: EdgeInsets.symmetric(vertical: AppDimensions.convertToH(9)),
           decoration: decoration,
           child: Center(
             child: Semantics(
@@ -176,17 +183,13 @@ class DayBasedPicker<T> extends StatelessWidget with CommonDatePickerFunctions {
       child: Column(
         children: <Widget>[
           Flexible(
-              child: Column(
-            children: <Widget>[
-              GridView.custom(
-                shrinkWrap: true,
-                gridDelegate: datePickerLayoutSettings.dayPickerGridDelegate,
-                childrenDelegate: SliverChildListDelegate(labels,
-                    addRepaintBoundaries: false),
-              ),
-              Container(height: 1, color: Color(0xffF0F0F0))
-            ],
-          )),
+            child: GridView.custom(
+              shrinkWrap: true,
+              gridDelegate: datePickerLayoutSettings.dayPickerGridDelegate,
+              childrenDelegate:
+                  SliverChildListDelegate(labels, addRepaintBoundaries: false),
+            ),
+          ),
         ],
       ),
     );
