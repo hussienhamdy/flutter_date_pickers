@@ -32,6 +32,8 @@ class MonthPicker extends StatefulWidget {
       this.onChanged,
       this.onRangeChanged,
       this.selectedPeriod,
+      this.switchUserClicks,
+      this.selectableDayPredicate,
       this.datePickerLayoutSettings = const DatePickerLayoutSettings(),
       this.datePickerKeys,
       this.datePickerStyles})
@@ -71,6 +73,10 @@ class MonthPicker extends StatefulWidget {
 
   // the selected months range
   final DatePeriod selectedPeriod;
+
+  final Function switchUserClicks;
+
+   final SelectableDayPredicate selectableDayPredicate;
 
   @override
   State<StatefulWidget> createState() => _MonthPickerState();
@@ -155,10 +161,12 @@ class _MonthPickerState extends State<MonthPicker> {
     if (widget.selectedPeriod != null) {
       return _MonthRangePicker(
         key: ValueKey<DateTime>(year),
-        selectablePicker: RangeSelectable(
+        selectablePicker: MonthRangeSelectable(
           widget.selectedPeriod,
           widget.firstDate,
           widget.lastDate,
+          widget.switchUserClicks,
+          selectableDayPredicate: widget.selectableDayPredicate
         ),
         currentDate: _todayDate,
         onChanged: widget.onRangeChanged,
@@ -624,4 +632,5 @@ class _MonthRangePicker extends StatelessWidget {
     );
   }
 }
+
 

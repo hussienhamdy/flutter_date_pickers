@@ -29,6 +29,7 @@ class RangePicker extends StatelessWidget {
       @required this.onChanged,
       @required this.firstDate,
       @required this.lastDate,
+      this.switchUserClicks,
       this.datePickerLayoutSettings = const DatePickerLayoutSettings(),
       this.datePickerStyles = const DatePickerRangeStyles(),
       this.datePickerKeys,
@@ -79,6 +80,8 @@ class RangePicker extends StatelessWidget {
   /// except days with dayType is [DayType.notSelected].
   final EventDecorationBuilder eventDecorationBuilder;
 
+  final Function switchUserClicks;
+
   @override
   Widget build(BuildContext context){
 
@@ -86,6 +89,7 @@ class RangePicker extends StatelessWidget {
         selectedPeriod,
         firstDate,
         lastDate,
+        switchUserClicks,
         selectableDayPredicate: selectableDayPredicate
     );
 
@@ -103,3 +107,4 @@ class RangePicker extends StatelessWidget {
     );
   }
 }
+

@@ -19,6 +19,7 @@ abstract class ISelectablePicker<T> {
   /// Function returns if day can be selected or not.
   final SelectableDayPredicate _selectableDayPredicate;
 
+
   @protected
   StreamController<T> onUpdateController = StreamController<T>.broadcast();
 
@@ -188,6 +189,7 @@ class DaySelectable extends ISelectablePicker<DateTime> {
   DayType getMonthType(DateTime month){
     // dummy
   }
+
   @override
   DayType getDayType(DateTime date) {
     DayType result;
@@ -219,11 +221,13 @@ class DaySelectable extends ISelectablePicker<DateTime> {
 
 class MonthRangeSelectable extends ISelectablePicker<DatePeriod>{
   DatePeriod selectedPeriod;
+  Function switchUserClicks;
 
   MonthRangeSelectable(
       this.selectedPeriod,
       DateTime firstDate,
       DateTime lastDate,
+      this.switchUserClicks,
       {SelectableDayPredicate selectableDayPredicate}
    ) : super(firstDate, lastDate, selectableDayPredicate);
 
@@ -302,6 +306,7 @@ class MonthRangeSelectable extends ISelectablePicker<DatePeriod>{
     // Was selected one-day-period.
     // With new user tap will be generated 2 dates as a period.
     if (sameDate) {
+      switchUserClicks(0);
       // if user tap on the already selected single day
       bool selectedAlreadySelectedDay = DatePickerUtils.sameDate(tappedDate, selectedPeriod.end);
       bool isSelectedFirstDay = DatePickerUtils.sameDate(tappedDate, firstDate);
@@ -331,6 +336,7 @@ class MonthRangeSelectable extends ISelectablePicker<DatePeriod>{
       // Was selected 2 dates as a period.
       // With new user tap new one-day-period will be generated.
     } else {
+      switchUserClicks(1);
       bool sameAsFirst = DatePickerUtils.sameDate(tappedDate, firstDate);
       bool sameAsLast = DatePickerUtils.sameDate(tappedDate, lastDate);
 
@@ -350,11 +356,13 @@ class MonthRangeSelectable extends ISelectablePicker<DatePeriod>{
 
 class RangeSelectable extends ISelectablePicker<DatePeriod>{
   DatePeriod selectedPeriod;
+  Function switchUserClicks;
 
   RangeSelectable(
       this.selectedPeriod,
       DateTime firstDate,
       DateTime lastDate,
+      this.switchUserClicks,
       {SelectableDayPredicate selectableDayPredicate}
    ) : super(firstDate, lastDate, selectableDayPredicate);
 
@@ -411,6 +419,7 @@ class RangeSelectable extends ISelectablePicker<DatePeriod>{
     // Was selected one-day-period.
     // With new user tap will be generated 2 dates as a period.
     if (sameDate) {
+      switchUserClicks(0);
       // if user tap on the already selected single day
       bool selectedAlreadySelectedDay = DatePickerUtils.sameDate(tappedDate, selectedPeriod.end);
       bool isSelectedFirstDay = DatePickerUtils.sameDate(tappedDate, firstDate);
@@ -440,6 +449,7 @@ class RangeSelectable extends ISelectablePicker<DatePeriod>{
       // Was selected 2 dates as a period.
       // With new user tap new one-day-period will be generated.
     } else {
+      switchUserClicks(1);
       bool sameAsFirst = DatePickerUtils.sameDate(tappedDate, firstDate);
       bool sameAsLast = DatePickerUtils.sameDate(tappedDate, lastDate);
 
