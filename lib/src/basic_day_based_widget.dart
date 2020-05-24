@@ -6,6 +6,7 @@ import 'package:flutter_date_pickers/src/event_decoration.dart';
 import 'package:flutter_date_pickers/src/i_selectable_picker.dart';
 import 'package:flutter_date_pickers/src/utils.dart';
 import 'package:wallet_app/views/app_dimensions.dart';
+import 'package:wallet_app/utils.dart';
 
 
 /// Widget for date pickers based on days and cover entire month.
@@ -160,8 +161,8 @@ class DayBasedPicker<T> extends StatelessWidget with CommonDatePickerFunctions {
               selected:
                   dayType != DayType.disabled && dayType != DayType.notSelected,
               child: ExcludeSemantics(
-                child: Text(localizations.formatDecimal(day), style: itemStyle),
-              ),
+                child: Text(Utils.convertNumberToLocalizedText(day, 0), style: itemStyle),
+              ),// localizations.formatDecimal(day)
             ),
           ),
         );

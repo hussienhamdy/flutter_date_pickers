@@ -11,6 +11,7 @@ import 'package:intl/intl.dart' as intl;
 import 'package:flutter_date_pickers/src/i_selectable_picker.dart';
 import 'package:flutter_date_pickers/src/day_type.dart';
 import 'package:wallet_app/views/app_dimensions.dart';
+import 'package:wallet_app/utils.dart';
 
 // this is hussien hamdy
 
@@ -423,7 +424,7 @@ class _MonthPicker extends StatelessWidget {
           child: Center(
             child: ExcludeSemantics(
               child: Text(
-                intl.DateFormat.y().format(displayedYear),
+                Utils.convertDateToLocalizedText('yyyy', displayedYear), //intl.DateFormat.y().format(displayedYear)
                 key: selectedPeriodKey,
                 style: datePickerStyles.displayedPeriodTitle,
               ),
@@ -610,7 +611,7 @@ class _MonthRangePicker extends StatelessWidget {
           child: Center(
             child: ExcludeSemantics(
               child: Text(
-                intl.DateFormat.y().format(displayedYear),
+                Utils.convertDateToLocalizedText('yyyy', displayedYear),// intl.DateFormat.y().format(displayedYear),
                 key: selectedPeriodKey,
                 style: datePickerStyles.displayedPeriodTitle,
               ),
