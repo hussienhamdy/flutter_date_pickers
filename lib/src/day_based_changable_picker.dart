@@ -14,6 +14,8 @@ import 'package:flutter_date_pickers/src/utils.dart';
 /// Date picker based on [DayBasedPicker] picker (for days, weeks, ranges).
 /// Allows select previous/next month.
 class DayBasedChangablePicker<T> extends StatefulWidget {
+
+  final bool removerUpperPart;
   /// The currently selected date.
   ///
   /// This date is highlighted in the picker.
@@ -55,6 +57,7 @@ class DayBasedChangablePicker<T> extends StatefulWidget {
     this.onChanged,
     this.firstDate,
     this.lastDate,
+    this.removerUpperPart,
     @required this.datePickerLayoutSettings,
     @required this.datePickerStyles,
     this.datePickerKeys,
@@ -136,7 +139,7 @@ class _DayBasedChangablePickerState<T> extends State<DayBasedChangablePicker<T>>
       height: widget.datePickerLayoutSettings.maxDayPickerHeight,
       child: Column(
         children: <Widget>[
-          SizedBox(
+          widget.removerUpperPart ? Container() : SizedBox(
             height: widget.datePickerLayoutSettings.dayPickerRowHeight,
             child: Padding(
               padding: widget.datePickerLayoutSettings.contentPadding, //match _DayPicker main layout padding
@@ -250,3 +253,4 @@ class _DayBasedChangablePickerState<T> extends State<DayBasedChangablePicker<T>>
     });
   }
 }
+

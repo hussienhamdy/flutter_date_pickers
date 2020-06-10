@@ -29,6 +29,7 @@ class DayPicker extends StatelessWidget {
       @required this.onChanged,
       @required this.firstDate,
       @required this.lastDate,
+      this.removerUpperPart,
       this.datePickerLayoutSettings = const DatePickerLayoutSettings(),
       this.datePickerStyles = const DatePickerRangeStyles(),
       this.datePickerKeys,
@@ -41,7 +42,7 @@ class DayPicker extends StatelessWidget {
         assert(!selectedDate.isBefore(firstDate)),
         assert(!selectedDate.isAfter(lastDate)),
         super(key: key);
-
+  final bool removerUpperPart;
   /// The currently selected date.
   ///
   /// This date is highlighted in the picker.
@@ -84,6 +85,7 @@ class DayPicker extends StatelessWidget {
     );
 
     return DayBasedChangablePicker<DateTime>(
+      removerUpperPart: removerUpperPart,
       selectablePicker: daySelectablePicker,
       selectedDate: selectedDate,
       firstDate: firstDate,
