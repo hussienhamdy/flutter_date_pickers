@@ -57,7 +57,7 @@ class DayBasedChangablePicker<T> extends StatefulWidget {
     this.onChanged,
     this.firstDate,
     this.lastDate,
-    this.removerUpperPart,
+    this.removerUpperPart = false,
     @required this.datePickerLayoutSettings,
     @required this.datePickerStyles,
     this.datePickerKeys,
